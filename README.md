@@ -1,0 +1,2 @@
+# cryptocoin
+Custom Cryptocurrency
