@@ -4,26 +4,69 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
 
+type Network interface {
+	Connect()
+}
+
 type Blockchain struct {
-	ID      string
-	name    string
-	version float32
-	blocks  []Block
+	ID           string
+	name         string
+	version      float32
+	blocks       []Block
+	Network      Network
+	blockStorage *bolt.DB
 }
 
 func (b *Blockchain) Init() {
 	b.ID = "initial blockchain"
 	b.name = "Cryptocoin"
 	b.version = 0.1
+
+	b.Network.Connect()
+	b.bootstrap()
+
 	b.blocks = append(b.blocks, b.genesisBlock())
 	for i := 0; i < 10; i++ {
 		nextBlock := b.createNextBlock("")
 		b.blocks = append(b.blocks, nextBlock)
-		fmt.Printf("%#v", nextBlock)
-		time.Sleep(time.Second * 1)
+	}
+}
+
+func (b *Blockchain) bootstrap() {
+	var err error
+
+	db, err := bolt.Open("blockchain.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatalln("Error connecting to blockchain.")
+	}
+	defer db.Close()
+
+	b.blockStorage = db
+
+	tx, err := b.blockStorage.Begin(true)
+	if err != nil {
+		log.Fatalln("Error opening connection to blockchain.")
+	}
+	defer tx.Rollback()
+
+	_, err = tx.CreateBucketIfNotExists([]byte("blocks"))
+	if err != nil {
+		log.Fatalln("Failed to initialize blockchain")
+	}
+
+	_, err = tx.CreateBucketIfNotExists([]byte("blocks"))
+	if err != nil {
+		log.Fatalln("Failed to initialize blockchain")
+	}
+
+	if err := tx.Commit(); err != nil {
+		log.Fatalln("Failed to initialize blockchain")
 	}
 }
 
