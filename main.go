@@ -6,5 +6,5 @@ func main() {
 	cryptocoin := Blockchain{}
 	cryptocoin.Init()
 
-	fmt.Printf("%#v", cryptocoin)
+	fmt.Printf("%#v\n", cryptocoin)
 }

@@ -22,8 +22,8 @@ func (b *Blockchain) Init() {
 	for i := 0; i < 10; i++ {
 		nextBlock := b.createNextBlock("")
 		b.blocks = append(b.blocks, nextBlock)
-		fmt.Println(nextBlock)
-		time.Sleep(1)
+		fmt.Printf("%#v", nextBlock)
+		time.Sleep(time.Second * 1)
 	}
 }
 
